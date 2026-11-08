@@ -5,6 +5,8 @@
 **Delegate everyday digital tasks to specialized AI agents using natural language.**
 
 ![Status](https://img.shields.io/badge/status-in%20development-orange)
+
+
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white)
 ![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
