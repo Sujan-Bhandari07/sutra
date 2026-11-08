@@ -265,26 +265,37 @@ flowchart TB
 
 ## Project Structure
 
-> **This is an example structure** for an Nx monorepo with a Next.js frontend and a NestJS backend. It does not reflect the actual repository layout. Update it to match the real project.
+Sutra is organized as an Nx monorepo.
 
 ```text
 sutra/
 ├── apps/
 │   ├── web/                  # Next.js frontend
-│   └── api/                  # NestJS backend
+│   ├── gateway/              # NestJS API gateway (entry point for client requests)
+│   ├── users/                # NestJS users service
+│   └── agents/               # NestJS AI agents service (LangChain, LangGraph, MCP)
 ├── libs/
-│   ├── agents/               # Agent definitions and LangGraph workflows
-│   ├── tools/                # Tool definitions and MCP integrations
-│   ├── shared/
-│   │   ├── types/            # Shared TypeScript types
-│   │   └── utils/            # Shared utilities
-│   └── ui/                   # Shared UI components (optional)
+│   ├── shared/               # Shared types, constants, and utilities
+│   ├── db/                   # MongoDB connection, schemas, and repositories
+│   ├── redis/                # Redis module and caching utilities
+│   └── filters/              # Shared exception filters
 ├── docker/                   # Docker-related configuration
 ├── docs/                     # Additional documentation
 ├── nx.json
 ├── package.json
 └── README.md
 ```
+
+| Path            | Description                                                      |
+| --------------- | ---------------------------------------------------------------- |
+| `apps/web`      | Next.js client for chat and agent interaction                    |
+| `apps/gateway`  | Single entry point that receives client requests                 |
+| `apps/users`    | User-related functionality                                       |
+| `apps/agents`   | AI agent system built with LangChain, LangGraph, and MCP         |
+| `libs/shared`   | Code shared across applications                                  |
+| `libs/db`       | Database access layer for MongoDB                                |
+| `libs/redis`    | Redis integration                                                |
+| `libs/filters`  | Common exception filters for the NestJS services                 |
 
 ## Getting Started
 
