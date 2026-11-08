@@ -2,6 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "rootDir": ".",
+    
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "bundler",
@@ -29,6 +30,9 @@
       ],
       "@sutra/filter": [
         "./libs/filter/src/index.ts"
+      ],
+      "@sutra/secret": [
+        "./libs/secret/src/index.ts"
       ]
     }
   },
