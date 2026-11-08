@@ -7,6 +7,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import {MicroserviceOptions,Transport} from "@nestjs/microservices"
+import {ServiceExceptionFilter} from "@sutra/filter"
 
 async function bootstrap() {
   process.title="User service"
@@ -23,6 +24,8 @@ async function bootstrap() {
       },
     },
   );
+
+  app.useGlobalFilters(new ServiceExceptionFilter())
 
   await app.listen();
   Logger.log("user service started");

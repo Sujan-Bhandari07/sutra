@@ -26,6 +26,9 @@
       ],
       "@sutra/redis": [
         "./libs/redis/src/index.ts"
+      ],
+      "@sutra/filter": [
+        "./libs/filter/src/index.ts"
       ]
     }
   },

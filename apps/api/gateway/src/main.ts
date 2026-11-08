@@ -6,6 +6,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
+import {GatewayExceptionFilter} from "@sutra/filter"
 
 
 async function bootstrap() {
@@ -14,6 +15,7 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   const port = process.env.GATEWAY_PORT;
+  app.useGlobalFilters(new GatewayExceptionFilter())
   await app.listen(port);
   Logger.log(`🚀 Gateway is running on: http://localhost:${port}/${globalPrefix}`);
 }
