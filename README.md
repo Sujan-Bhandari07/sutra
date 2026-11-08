@@ -4,16 +4,19 @@
 
 **Delegate everyday digital tasks to specialized AI agents using natural language.**
 
-![Status](https://img.shields.io/badge/status-in%20development-orange)
+![Status](https://img.shields.io/badge/STATUS-IN%20DEVELOPMENT-0d1117?style=for-the-badge&labelColor=161b22&color=f0883e)
 
-
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white)
-![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
-![LangGraph](https://img.shields.io/badge/LangGraph-1C3C3C)
-![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-5A67D8)
-![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
-![License](https://img.shields.io/badge/license-TBD-lightgrey)
+![TypeScript](https://img.shields.io/badge/TypeScript-0d1117?style=flat-square&logo=typescript&logoColor=3178C6)
+![Next.js](https://img.shields.io/badge/Next.js-0d1117?style=flat-square&logo=nextdotjs&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-0d1117?style=flat-square&logo=nestjs&logoColor=E0234E)
+![LangChain](https://img.shields.io/badge/LangChain-0d1117?style=flat-square&logo=langchain&logoColor=1C9C8C)
+![LangGraph](https://img.shields.io/badge/LangGraph-0d1117?style=flat-square&logoColor=white)
+![MCP](https://img.shields.io/badge/MCP-0d1117?style=flat-square&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-0d1117?style=flat-square&logo=mongodb&logoColor=47A248)
+![Redis](https://img.shields.io/badge/Redis-0d1117?style=flat-square&logo=redis&logoColor=DC382D)
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-0d1117?style=flat-square&logo=rabbitmq&logoColor=FF6600)
+![Docker](https://img.shields.io/badge/Docker-0d1117?style=flat-square&logo=docker&logoColor=2496ED)
+![License](https://img.shields.io/badge/License-TBD-0d1117?style=flat-square&labelColor=161b22&color=8b949e)
 
 </div>
 
@@ -23,7 +26,7 @@
 
 Sutra is an AI-powered automation and productivity platform built around specialized AI agents. Instead of switching between calendars, inboxes, and social media tools, you describe what you want in plain language and Sutra's agents carry out the work. It also includes a general-purpose conversational assistant for everyday questions.
 
-> **Project status:** Sutra is under active development. See [Development Status](#development-status) for details on what is implemented and what is planned.
+> **Project status:** Sutra is under active development. See [Development Status](#development-status) for what is implemented and what is planned.
 
 ## Table of Contents
 
@@ -34,7 +37,6 @@ Sutra is an AI-powered automation and productivity platform built around special
 - [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
 - [Development Status](#development-status)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
@@ -52,7 +54,7 @@ Sutra treats these tasks as delegable. A user describes an outcome in natural la
 
 ## Features
 
-> Implementation status of each capability should be confirmed against the codebase. The legend below is used throughout this README:
+> Implementation status of each capability should be confirmed against the codebase. Legend used throughout this README:
 >
 > ✅ Implemented · 🚧 In progress · 🗓️ Planned · ❔ Status to be confirmed
 
@@ -88,13 +90,13 @@ Sutra treats these tasks as delegable. A user describes an outcome in natural la
 
 ### Feature status
 
-| Feature                 | Status |
-| ----------------------- | :----: |
-| General AI chat         |   ❔   |
-| Agent orchestration     |   ❔   |
-| Calendar and meetings   |   ❔   |
-| Email automation        |   ❔   |
-| Instagram automation    |   ❔   |
+| Feature               | Status |
+| --------------------- | :----: |
+| General AI chat       |   ❔   |
+| Agent orchestration   |   ❔   |
+| Calendar and meetings |   ❔   |
+| Email automation      |   ❔   |
+| Instagram automation  |   ❔   |
 
 <!-- Replace each ❔ with ✅, 🚧, or 🗓️ to reflect the current state of the project. -->
 
@@ -105,11 +107,11 @@ At a high level, Sutra connects four layers:
 1. **User interface.** The user sends an instruction through the web client, for example a request to schedule a meeting or draft an email.
 2. **Backend.** The API receives the request, manages the conversation, and hands the task to the agent system.
 3. **Agents.** Specialized agents, built with LangChain and orchestrated with LangGraph, decide which steps and tools are needed to complete the task.
-4. **Tools and external services.** Agents reach external services through tools. These may be exposed via the Model Context Protocol.
+4. **Tools and external services.** Agents reach external services through tools, which may be exposed via the Model Context Protocol.
 
 ### Agent orchestration with LangGraph
 
-LangGraph is used to model agent behavior as a graph of steps and state. This lets a task move through stages such as interpreting the request, selecting a tool, executing it, and responding, with state carried between steps. This structure is what allows multi-step workflows to be coordinated and inspected rather than handled as a single opaque prompt.
+LangGraph models agent behavior as a graph of steps and state. A task can move through stages such as interpreting the request, selecting a tool, executing it, and responding, with state carried between steps. This structure allows multi-step workflows to be coordinated and inspected rather than handled as a single opaque prompt.
 
 ### Tool access with MCP
 
@@ -117,15 +119,16 @@ The Model Context Protocol provides a standard way for agents to discover and ca
 
 ### Streaming responses
 
-Server-Sent Events (SSE) are used to stream responses and progress updates from the backend to the client, so users see output as it is produced.
+Server-Sent Events (SSE) stream responses and progress updates from the backend to the client, so users see output as it is produced.
 
-> Specific orchestration flows, graph definitions, and tool contracts are documented separately as they are finalized.
+> Specific orchestration flows, graph definitions, and tool contracts will be documented as they are finalized.
 
 ## Architecture
 
-The diagram below shows the **conceptual** relationship between components. Components drawn with dashed borders are conceptual and have not been confirmed as implemented.
+The diagram below shows the **conceptual** relationship between components. Dashed borders mark components whose role has not been confirmed as implemented.
 
 ```mermaid
+%%{init: {'theme':'dark','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#30363d','lineColor':'#8b949e','clusterBkg':'#0d1117','clusterBorder':'#30363d','edgeLabelBackground':'#0d1117'}}}%%
 flowchart TB
     subgraph Client["Frontend"]
         UI["Next.js + Tailwind CSS"]
@@ -185,69 +188,82 @@ flowchart TB
     Orchestrator -.->|"Conceptual"| MQ
     MQ -.->|"Conceptual"| Orchestrator
 
+    classDef frontend fill:#0c2d48,stroke:#58a6ff,color:#e6edf3;
+    classDef backend fill:#2d1b00,stroke:#f0883e,color:#e6edf3;
+    classDef agent fill:#1f1b3a,stroke:#a371f7,color:#e6edf3;
+    classDef tool fill:#0f2e24,stroke:#3fb950,color:#e6edf3;
+    classDef data fill:#161b22,stroke:#8b949e,color:#e6edf3;
+    classDef external fill:#2a1015,stroke:#f85149,color:#e6edf3;
     classDef conceptual stroke-dasharray: 5 5;
+
+    class UI frontend;
+    class API,SSE,Orchestrator backend;
+    class LC,LG,CalAgent,MailAgent,IGAgent,ChatAgent agent;
+    class MCP tool;
+    class Mongo,Redis,MQ data;
+    class Cal,Mail,IG,LLM external;
     class MQ,Redis conceptual;
 ```
 
 ### Component notes
 
-| Component   | Role in Sutra                                                              |
-| ----------- | -------------------------------------------------------------------------- |
-| Next.js     | Web client for chat and agent interaction                                  |
-| NestJS      | Backend API, request handling, and orchestration entry point               |
-| LangChain   | LLM and tool abstractions used by agents                                   |
-| LangGraph   | Stateful orchestration of multi-step agent workflows                       |
-| MCP         | Standard interface between agents and external tools                       |
-| MongoDB     | Persistent storage (for example conversations and user data)               |
-| Redis       | Caching and short-lived state (exact usage to be confirmed)                |
-| RabbitMQ    | Asynchronous messaging between services (exact usage to be confirmed)      |
-| SSE         | One-way streaming of responses and progress to the client                  |
+| Component | Role in Sutra                                                         |
+| --------- | --------------------------------------------------------------------- |
+| Next.js   | Web client for chat and agent interaction                             |
+| NestJS    | Backend API, request handling, and orchestration entry point          |
+| LangChain | LLM and tool abstractions used by agents                              |
+| LangGraph | Stateful orchestration of multi-step agent workflows                  |
+| MCP       | Standard interface between agents and external tools                  |
+| MongoDB   | Persistent storage (for example conversations and user data)          |
+| Redis     | Caching and short-lived state (exact usage to be confirmed)           |
+| RabbitMQ  | Asynchronous messaging between services (exact usage to be confirmed) |
+| SSE       | One-way streaming of responses and progress to the client             |
 
 ## Technology Stack
 
 ### Frontend
 
-| Technology   | Purpose                                      |
-| ------------ | -------------------------------------------- |
-| Next.js      | React framework for the web client           |
-| TypeScript   | Type-safe development                        |
-| Tailwind CSS | Utility-first styling                        |
+| Technology   | Purpose                            |
+| ------------ | ---------------------------------- |
+| Next.js      | React framework for the web client |
+| TypeScript   | Type-safe development              |
+| Tailwind CSS | Utility-first styling              |
 
 ### Backend
 
-| Technology | Purpose                                              |
-| ---------- | ---------------------------------------------------- |
-| NestJS     | Modular server-side framework                        |
-| TypeScript | Shared language across the stack                     |
-| Nx         | Monorepo tooling, task running, and project graph    |
+| Technology | Purpose                                           |
+| ---------- | ------------------------------------------------- |
+| NestJS     | Modular server-side framework                     |
+| TypeScript | Shared language across the stack                  |
+| Nx         | Monorepo tooling, task running, and project graph |
 
 ### AI and Agent Architecture
 
-| Technology | Purpose                                                  |
-| ---------- | -------------------------------------------------------- |
-| LangChain  | LLM integration and tool abstractions                    |
-| LangGraph  | Graph-based agent orchestration and state management     |
+| Technology | Purpose                                                   |
+| ---------- | --------------------------------------------------------- |
+| LangChain  | LLM integration and tool abstractions                     |
+| LangGraph  | Graph-based agent orchestration and state management      |
 | MCP        | Standardized connection between agents and external tools |
 
 ### Database and Caching
 
-| Technology | Purpose                                  |
-| ---------- | ---------------------------------------- |
-| MongoDB    | Primary document database                |
-| Redis      | Caching and ephemeral state              |
+| Technology | Purpose                     |
+| ---------- | --------------------------- |
+| MongoDB    | Primary document database   |
+| Redis      | Caching and ephemeral state |
 
 ### Messaging and Real-Time Communication
 
-| Technology | Purpose                                             |
-| ---------- | --------------------------------------------------- |
-| RabbitMQ   | Message broker for asynchronous workloads           |
-| SSE        | Streaming responses from server to client           |
+| Technology | Purpose                                   |
+| ---------- | ----------------------------------------- |
+| RabbitMQ   | Message broker for asynchronous workloads |
+| SSE        | Streaming responses from server to client |
 
 ### Infrastructure
 
-| Technology | Purpose                                                |
-| ---------- | ------------------------------------------------------ |
-| Docker     | Containerization and consistent local environments     |
+| Technology | Purpose                                            |
+| ---------- | -------------------------------------------------- |
+| Docker     | Containerization and consistent local environments |
 
 ## Project Structure
 
@@ -267,7 +283,6 @@ sutra/
 │   └── ui/                   # Shared UI components (optional)
 ├── docker/                   # Docker-related configuration
 ├── docs/                     # Additional documentation
-├── .env.example
 ├── nx.json
 ├── package.json
 └── README.md
@@ -275,7 +290,7 @@ sutra/
 
 ## Getting Started
 
-> Commands and values below use placeholders where project-specific information is not available. Replace them with the real values from the repository.
+> Commands below use placeholders where project-specific information is not available. Replace them with the real values from the repository.
 
 ### Prerequisites
 
@@ -294,11 +309,11 @@ cd <repository-name>
 
 # 2. Install dependencies
 npm install
-
-# 3. Create your environment file
-cp .env.example .env
-# Then edit .env and fill in your own values
 ```
+
+### Configuration
+
+Environment configuration for Sutra is still being finalized. This section will document the required variables once they are defined. Never commit real credentials or API keys to the repository.
 
 ### Start supporting services
 
@@ -320,7 +335,7 @@ npx nx serve <backend-project-name>
 npx nx serve <frontend-project-name>   # or: npx nx dev <frontend-project-name>
 ```
 
-The ports the applications listen on are `<backend-port>` and `<frontend-port>`. Check each project's configuration to confirm them.
+The applications listen on `<backend-port>` and `<frontend-port>`. Check each project's configuration to confirm them.
 
 ### Build and test
 
@@ -330,60 +345,19 @@ npx nx test <project-name>
 npx nx run-many -t build   # build all projects
 ```
 
-## Environment Variables
-
-The following `.env.example` is a **template with placeholder names and values**. Variable names are illustrative; align them with the names the code actually reads. Never commit real credentials.
-
-```bash
-# ─── Application ───────────────────────────────────────────
-NODE_ENV=development
-APP_URL=<frontend-url>
-API_URL=<backend-url>
-
-# ─── MongoDB ───────────────────────────────────────────────
-MONGODB_URI=<your-mongodb-connection-string>
-
-# ─── Redis ─────────────────────────────────────────────────
-REDIS_URL=<your-redis-connection-string>
-
-# ─── RabbitMQ ──────────────────────────────────────────────
-RABBITMQ_URL=<your-rabbitmq-connection-string>
-
-# ─── AI Provider ───────────────────────────────────────────
-AI_PROVIDER_API_KEY=<your-ai-provider-api-key>
-AI_MODEL=<model-name>
-
-# ─── Calendar Integration ──────────────────────────────────
-CALENDAR_CLIENT_ID=<your-calendar-client-id>
-CALENDAR_CLIENT_SECRET=<your-calendar-client-secret>
-
-# ─── Email Integration ─────────────────────────────────────
-EMAIL_CLIENT_ID=<your-email-client-id>
-EMAIL_CLIENT_SECRET=<your-email-client-secret>
-
-# ─── Instagram Integration ─────────────────────────────────
-INSTAGRAM_APP_ID=<your-instagram-app-id>
-INSTAGRAM_APP_SECRET=<your-instagram-app-secret>
-
-# ─── Authentication / Security ─────────────────────────────
-AUTH_SECRET=<your-generated-secret>
-```
-
-> Make sure `.env` is listed in `.gitignore`.
-
 ## Development Status
 
 Sutra is **currently in development** and is not yet production-ready. APIs, data models, and agent behavior may change without notice.
 
-| Area                          | Status |
-| ----------------------------- | :----: |
-| Core platform (web and API)   |   ❔   |
-| Agent orchestration           |   ❔   |
-| General AI chat               |   ❔   |
-| Calendar and meeting agent    |   ❔   |
-| Email agent                   |   ❔   |
-| Instagram agent               |   ❔   |
-| Streaming responses (SSE)     |   ❔   |
+| Area                        | Status |
+| --------------------------- | :----: |
+| Core platform (web and API) |   ❔   |
+| Agent orchestration         |   ❔   |
+| General AI chat             |   ❔   |
+| Calendar and meeting agent  |   ❔   |
+| Email agent                 |   ❔   |
+| Instagram agent             |   ❔   |
+| Streaming responses (SSE)   |   ❔   |
 
 <!-- Update the table to reflect reality: ✅ Implemented · 🚧 In progress · 🗓️ Planned -->
 
@@ -395,6 +369,7 @@ The roadmap is directional and may change as the project evolves.
 - [ ] Stable monorepo setup with shared types and tooling
 - [ ] Authentication and user accounts
 - [ ] Conversation persistence
+- [ ] Documented environment configuration
 
 **Agent platform**
 - [ ] Robust LangGraph workflows with state handling and error recovery
