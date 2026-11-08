@@ -4,7 +4,7 @@
 
 **Delegate everyday digital tasks to specialized AI agents using natural language.**
 
-![Status](https://img.shields.io/badge/STATUS-IN%20DEVELOPMENT-0d1117?style=for-the-badge&labelColor=161b22&color=f0883e)
+![Status](https://img.shields.io/badge/STATUS-IN%20DEVELOPMENT-0d1117?style=for-the-badge&labelColor=161b22&color=21262d)
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-0d1117?style=flat-square&logo=typescript&logoColor=3178C6)
 ![Next.js](https://img.shields.io/badge/Next.js-0d1117?style=flat-square&logo=nextdotjs&logoColor=white)
@@ -16,7 +16,7 @@
 ![Redis](https://img.shields.io/badge/Redis-0d1117?style=flat-square&logo=redis&logoColor=DC382D)
 ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-0d1117?style=flat-square&logo=rabbitmq&logoColor=FF6600)
 ![Docker](https://img.shields.io/badge/Docker-0d1117?style=flat-square&logo=docker&logoColor=2496ED)
-![License](https://img.shields.io/badge/License-TBD-0d1117?style=flat-square&labelColor=161b22&color=8b949e)
+![License](https://img.shields.io/badge/License-TBD-0d1117?style=flat-square&labelColor=161b22&color=30363d)
 
 </div>
 
@@ -26,7 +26,7 @@
 
 Sutra is an AI-powered automation and productivity platform built around specialized AI agents. Instead of switching between calendars, inboxes, and social media tools, you describe what you want in plain language and Sutra's agents carry out the work. It also includes a general-purpose conversational assistant for everyday questions.
 
-> **Project status:** Sutra is under active development. See [Development Status](#development-status) for what is implemented and what is planned.
+> **Project status:** Sutra has just entered development. All features described here are currently in development. See [Development Status](#development-status) for details.
 
 ## Table of Contents
 
@@ -54,9 +54,9 @@ Sutra treats these tasks as delegable. A user describes an outcome in natural la
 
 ## Features
 
-> Implementation status of each capability should be confirmed against the codebase. Legend used throughout this README:
+> All features below are currently **🚧 in development**.
 >
-> ✅ Implemented · 🚧 In progress · 🗓️ Planned · ❔ Status to be confirmed
+> Legend: ✅ Implemented · 🚧 In development · 🗓️ Planned
 
 ### 🤖 AI Agent System
 
@@ -90,15 +90,13 @@ Sutra treats these tasks as delegable. A user describes an outcome in natural la
 
 ### Feature status
 
-| Feature               | Status |
-| --------------------- | :----: |
-| General AI chat       |   ❔   |
-| Agent orchestration   |   ❔   |
-| Calendar and meetings |   ❔   |
-| Email automation      |   ❔   |
-| Instagram automation  |   ❔   |
-
-<!-- Replace each ❔ with ✅, 🚧, or 🗓️ to reflect the current state of the project. -->
+| Feature               |       Status       |
+| --------------------- | :----------------: |
+| General AI chat       | 🚧 In development  |
+| Agent orchestration   | 🚧 In development  |
+| Calendar and meetings | 🚧 In development  |
+| Email automation      | 🚧 In development  |
+| Instagram automation  | 🚧 In development  |
 
 ## How It Works
 
@@ -125,7 +123,7 @@ Server-Sent Events (SSE) stream responses and progress updates from the backend 
 
 ## Architecture
 
-The diagram below shows the **conceptual** relationship between components. Dashed borders mark components whose role has not been confirmed as implemented.
+The diagram below shows the **conceptual** relationship between components. The system is in early development, so this reflects the intended design and may change. Dashed borders mark components whose exact role is still being defined.
 
 ```mermaid
 %%{init: {'theme':'dark','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#30363d','lineColor':'#8b949e','clusterBkg':'#0d1117','clusterBorder':'#30363d','edgeLabelBackground':'#0d1117'}}}%%
@@ -189,7 +187,7 @@ flowchart TB
     MQ -.->|"Conceptual"| Orchestrator
 
     classDef frontend fill:#0c2d48,stroke:#58a6ff,color:#e6edf3;
-    classDef backend fill:#2d1b00,stroke:#f0883e,color:#e6edf3;
+    classDef backend fill:#12262e,stroke:#56d4dd,color:#e6edf3;
     classDef agent fill:#1f1b3a,stroke:#a371f7,color:#e6edf3;
     classDef tool fill:#0f2e24,stroke:#3fb950,color:#e6edf3;
     classDef data fill:#161b22,stroke:#8b949e,color:#e6edf3;
@@ -215,8 +213,8 @@ flowchart TB
 | LangGraph | Stateful orchestration of multi-step agent workflows                  |
 | MCP       | Standard interface between agents and external tools                  |
 | MongoDB   | Persistent storage (for example conversations and user data)          |
-| Redis     | Caching and short-lived state (exact usage to be confirmed)           |
-| RabbitMQ  | Asynchronous messaging between services (exact usage to be confirmed) |
+| Redis     | Caching and short-lived state (exact usage still being defined)       |
+| RabbitMQ  | Asynchronous messaging between services (exact usage still being defined) |
 | SSE       | One-way streaming of responses and progress to the client             |
 
 ## Technology Stack
@@ -347,19 +345,17 @@ npx nx run-many -t build   # build all projects
 
 ## Development Status
 
-Sutra is **currently in development** and is not yet production-ready. APIs, data models, and agent behavior may change without notice.
+Sutra has just entered development and is **not yet production-ready**. APIs, data models, and agent behavior will change without notice.
 
-| Area                        | Status |
-| --------------------------- | :----: |
-| Core platform (web and API) |   ❔   |
-| Agent orchestration         |   ❔   |
-| General AI chat             |   ❔   |
-| Calendar and meeting agent  |   ❔   |
-| Email agent                 |   ❔   |
-| Instagram agent             |   ❔   |
-| Streaming responses (SSE)   |   ❔   |
-
-<!-- Update the table to reflect reality: ✅ Implemented · 🚧 In progress · 🗓️ Planned -->
+| Area                        |       Status       |
+| --------------------------- | :----------------: |
+| Core platform (web and API) | 🚧 In development  |
+| Agent orchestration         | 🚧 In development  |
+| General AI chat             | 🚧 In development  |
+| Calendar and meeting agent  | 🚧 In development  |
+| Email agent                 | 🚧 In development  |
+| Instagram agent             | 🚧 In development  |
+| Streaming responses (SSE)   | 🚧 In development  |
 
 ## Roadmap
 
