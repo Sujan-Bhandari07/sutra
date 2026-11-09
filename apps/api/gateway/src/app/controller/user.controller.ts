@@ -5,12 +5,15 @@ import {
   Inject,
   InternalServerErrorException,
   Post,
+  Req,
   Res,
+  UseGuards,
 } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { LoginDto, success } from "@sutra/shared";
 import { firstValueFrom } from "rxjs";
 import type { Response } from "express";
+import { Authreq, JwtGuard } from "../guard/auth.guard";
 
 @Controller("users")
 export class userController {
@@ -34,5 +37,14 @@ export class userController {
     });
 
     return success("Login successfull !", result.payload);
+  }
+  @UseGuards(JwtGuard)
+  @Get("getprofile")
+  async getprofile(@Req() req:Authreq){
+
+    return firstValueFrom(this.usersclient.send("getprofile",{id:req.user}))
+
+   
+
   }
 }

@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { LoginDto } from '@sutra/shared';
+import { GetProfileDto, LoginDto } from '@sutra/shared';
 
 @Controller()
 export class AppController {
@@ -10,6 +10,12 @@ export class AppController {
   @MessagePattern("login")
   login(@Payload() data:LoginDto){
     return this.userService.login(data)
+  }
+
+  @MessagePattern("getprofile")
+  getprofile(@Payload() data:GetProfileDto ){
+    return this.userService.getprofile(data)
+
   }
 
 

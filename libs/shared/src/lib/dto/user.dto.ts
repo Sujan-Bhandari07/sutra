@@ -5,3 +5,11 @@ export class LoginDto{
 @IsDefined({message:"Token is required."})
     token!:string
 }
+
+export class GetProfileDto{
+@IsString({message:"Id must be string"})
+@IsDefined({message:"Id is required."})
+    id!:string
+}
+
+

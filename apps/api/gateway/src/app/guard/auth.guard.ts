@@ -8,12 +8,7 @@ import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
 
 export interface Authreq extends Request {
-  user: {
-    _id: string;
-    fullname: string;
-    email: string;
-    profilepic: string;
-  };
+  user: string;
 }
 
 @Injectable()
@@ -29,7 +24,7 @@ export class JwtGuard implements CanActivate {
     if (!decoded) {
       throw new UnauthorizedException("Pls login first");
     }
-    req.user = decoded;
+    req.user = decoded._id;
 
     return true;
   }

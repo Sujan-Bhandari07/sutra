@@ -2,13 +2,14 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { User, UserDocument } from "./schema/user.schema";
 import { Model } from "mongoose";
 import { REDIS_CLIENT } from "@sutra/redis";
 import Redis from "ioredis";
-import { ILogin } from "@sutra/shared";
+import { IGetProfile, ILogin, success } from "@sutra/shared";
 import { getAuth } from "firebase-admin/auth";
 import { app } from "./config/firebase";
 import { JwtService } from "@nestjs/jwt";
@@ -35,9 +36,7 @@ export class AppService {
     }
     const jwt_token = await this.jwt.signAsync({
       _id:user._id,
-      fullname:user.fullname,
-      email:user.email,
-      profilepic:user.profilepic
+   
 
     });
     if (!jwt_token) {
@@ -49,4 +48,18 @@ export class AppService {
       payload: user,
     };
   }
+
+
+
+
+  async getprofile(data:IGetProfile){
+    const{id}=data
+    const user = await this.usermodel.findById(id)
+    if(!user){
+      throw new NotFoundException("User not found")
+    }
+    return success("User found successfully",user)
+  }
+
+  
 }
