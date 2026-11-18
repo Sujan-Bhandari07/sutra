@@ -12,7 +12,7 @@ import { GCreateAgentDto } from "@sutra/shared";
 import { Authreq, JwtGuard } from "../guard/auth.guard";
 import { firstValueFrom } from "rxjs";
 
-@Controller()
+@Controller("agents")
 export class AgentController {
   constructor(
     @Inject("AGENTS_SERVICE") private readonly agentclient: ClientProxy,
