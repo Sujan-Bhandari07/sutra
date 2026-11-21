@@ -23,6 +23,7 @@ export function ChatWindow() {
   const selectedAgentId = useAppStore((s) => s.selectedAgentId);
   const replyPhase = useAppStore((s) => s.replyPhase);
   const busyId = useAppStore((s) => s.busyConversationId);
+  const executionStatus = useAppStore((s) => s.executionStatus);
   const sendMessage = useAppStore((s) => s.sendMessage);
 
   const conversation = useMemo(() => conversations.find((c) => c.id === activeId) ?? null, [conversations, activeId]);
@@ -92,7 +93,7 @@ export function ChatWindow() {
             {messages.map((m) => (
               <ChatMessage key={m.id} message={m} />
             ))}
-            {showTyping && <TypingIndicator />}
+            {showTyping && <TypingIndicator status={executionStatus ?? undefined} />}
           </div>
         )}
       </div>

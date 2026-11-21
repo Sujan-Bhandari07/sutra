@@ -16,7 +16,7 @@ export class JwtGuard implements CanActivate {
   constructor(private readonly jwt: JwtService) {}
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest<Authreq>();
-    const token = req.cookies.token;
+    const token = req.cookies?.token;
     if (!token) {
       throw new UnauthorizedException("Pls login first");
     }

@@ -84,7 +84,7 @@ export function ChatInput() {
               <input
                 ref={imageInput}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,video/mp4"
                 multiple
                 hidden
                 onChange={(e) => {
@@ -136,7 +136,7 @@ export function ChatInput() {
             )}
           </div>
         </div>
-        <p className="mt-2 text-center text-xs text-muted">Demo mode: sample replies, no files uploaded.</p>
+        <p className="mt-2 text-center text-xs text-muted">Sutra streams agent responses. Images and MP4 videos are uploaded to your configured media host.</p>
       </div>
     </div>
   );

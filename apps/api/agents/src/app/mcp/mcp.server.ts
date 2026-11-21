@@ -25,7 +25,6 @@ server.registerTool("web-search",{
 },
 async({query})=>{
 try {
-    console.log(query)
  const response = await search.invoke({query})
   return{
     content:[{
@@ -39,7 +38,7 @@ try {
   return{
     content:[{
       type:"text",
-      text:error
+      text:error instanceof Error ? error.message : "Search failed"
     }]
   }
 }
@@ -52,9 +51,9 @@ try {
 const main =async ()=>{
 const transport = new StdioServerTransport()
 await server.connect(transport)
-console.log("Mcp server started")
+console.error("MCP server started")
 }
 
 main().catch((error)=>{
-  console.log(error)
+  console.error("MCP server failed to start:", error instanceof Error ? error.name : "UnknownError")
 })

@@ -15,7 +15,8 @@ import * as agentsService from "@/services/agents";
 import * as authService from "@/services/auth";
 import * as conversationsService from "@/services/conversations";
 import * as integrationsService from "@/services/integrations";
-import { streamReply } from "@/services/messages";
+import { streamChat } from "@/services/messages";
+import { uploadAttachment } from "@/services/uploads";
 import { GENERAL_AGENT } from "@/lib/tools";
 import { uid } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ export type ThemePreference = "dark" | "light" | "system";
 
 interface AppState {
   user: User | null;
+  authReady: boolean;
   agents: AgentRecord[];
   agentsStatus: "idle" | "loading" | "ready" | "error";
   integrations: Integration[];
@@ -33,13 +35,15 @@ interface AppState {
   /** Conversation currently waiting on or receiving a reply. */
   busyConversationId: string | null;
   replyPhase: "idle" | "thinking" | "streaming";
+  executionStatus: string | null;
   sidebarCollapsed: boolean;
   mobileNavOpen: boolean;
   theme: ThemePreference;
 
   init: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
   loadAgents: () => Promise<void>;
-  loadIntegrations: () => Promise<void>;
+  loadIntegrations: () => Promise<{ ok: boolean; status?: number }>;
 
   setSidebarCollapsed: (v: boolean) => void;
   setMobileNavOpen: (v: boolean) => void;
@@ -47,7 +51,8 @@ interface AppState {
 
   newChat: (agentId?: string) => void;
   selectConversation: (id: string) => void;
-  deleteConversation: (id: string) => void;
+  refreshConversation: (conversation: Conversation) => void;
+  deleteConversation: (id: string) => Promise<void>;
   setSelectedAgent: (id: string) => void;
   sendMessage: (text: string, attachments: Attachment[]) => Promise<void>;
   stopReply: () => void;
@@ -60,7 +65,7 @@ interface AppState {
   disconnectIntegration: (tool: AgentTool) => Promise<void>;
 }
 
-let abortSignal = { aborted: false };
+let abortController: AbortController | null = null;
 let initPromise: Promise<void> | null = null;
 
 function applyTheme(theme: ThemePreference) {
@@ -72,6 +77,7 @@ function applyTheme(theme: ThemePreference) {
 
 export const useAppStore = create<AppState>((set, get) => ({
   user: null,
+  authReady: false,
   agents: [],
   agentsStatus: "idle",
   integrations: [],
@@ -81,6 +87,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectedAgentId: GENERAL_AGENT.id,
   busyConversationId: null,
   replyPhase: "idle",
+  executionStatus: null,
   sidebarCollapsed: false,
   mobileNavOpen: false,
   theme: "dark",
@@ -90,16 +97,19 @@ export const useAppStore = create<AppState>((set, get) => ({
       initPromise = (async () => {
         const stored = (typeof localStorage !== "undefined" && (localStorage.getItem("sutra-theme") as ThemePreference | null)) || "dark";
         set({ theme: stored });
-        const [user, conversations] = await Promise.all([
-          authService.getCurrentUser(),
-          conversationsService.listConversations(),
-        ]);
-        set({ user, conversations });
+        const user = await authService.getCurrentUser();
+        if (!user) {
+          set({ user: null, authReady: true, conversations: [], agents: [], agentsStatus: "ready", integrations: [], integrationsStatus: "ready" });
+          return;
+        }
+        set({ user, authReady: true, conversations: await conversationsService.listConversations() });
         await Promise.all([get().loadAgents(), get().loadIntegrations()]);
       })();
     }
     return initPromise;
   },
+
+  refreshAuth: async () => { initPromise = null; set({ authReady: false }); await get().init(); },
 
   loadAgents: async () => {
     set({ agentsStatus: "loading" });
@@ -114,8 +124,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ integrationsStatus: "loading" });
     try {
       set({ integrations: await integrationsService.listIntegrations(), integrationsStatus: "ready" });
-    } catch {
+      return { ok: true };
+    } catch (error) {
       set({ integrationsStatus: "error" });
+      const status = error instanceof integrationsService.IntegrationRequestError ? error.status : undefined;
+      return { ok: false, ...(status ? { status } : {}) };
     }
   },
 
@@ -148,7 +161,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
   },
 
-  deleteConversation: (id) => {
+  refreshConversation: (conversation) => set((s) => ({ conversations: [conversation, ...s.conversations.filter((item) => item.id !== conversation.id)] })),
+
+  deleteConversation: async (id) => {
+    await conversationsService.deleteConversation(id);
     if (get().activeConversationId === id) get().stopReply();
     set((s) => ({
       conversations: s.conversations.filter((c) => c.id !== id),
@@ -163,7 +179,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (state.replyPhase !== "idle") return;
 
     const agentId = state.selectedAgentId === GENERAL_AGENT.id ? null : state.selectedAgentId;
-    const agent = agentId ? state.agents.find((a) => a.id === agentId) ?? null : null;
     const now = new Date().toISOString();
 
     const userMessage: Message = {
@@ -175,8 +190,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     };
 
     let convoId = state.activeConversationId;
+    const isNewConversation = !convoId;
     if (!convoId) {
-      convoId = uid("conv");
+      convoId = `pending-${uid("conv")}`;
       const convo: Conversation = {
         id: convoId,
         title: conversationsService.titleFromMessage(text, attachments.length > 0),
@@ -195,40 +211,54 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
 
     const targetId = convoId;
-    abortSignal = { aborted: false };
-    const signal = abortSignal;
-    set({ busyConversationId: targetId, replyPhase: "thinking" });
+    abortController = new AbortController();
+    const controller = abortController;
+    set({ busyConversationId: targetId, replyPhase: "thinking", executionStatus: "Preparing request" });
 
     const replyId = uid("msg");
-    const update = (content: string, first: boolean) =>
+    const update = (content: string, first: boolean, metadata?: Message["metadata"]) =>
       set((s) => ({
         conversations: s.conversations.map((c) => {
           if (c.id !== targetId) return c;
-          const reply: Message = { id: replyId, role: "assistant", content, createdAt: new Date().toISOString() };
-          const messages = first ? [...c.messages, reply] : c.messages.map((m) => (m.id === replyId ? { ...m, content } : m));
+          const reply: Message = { id: replyId, role: "assistant", content, createdAt: new Date().toISOString(), metadata };
+          const messages = first ? [...c.messages, reply] : c.messages.map((m) => (m.id === replyId ? { ...m, content, metadata } : m));
           return { ...c, messages, updatedAt: new Date().toISOString() };
         }),
       }));
 
     try {
-      let first = true;
-      for await (const chunk of streamReply(
-        { text, attachments, agent, integrations: get().integrations },
-        signal,
-      )) {
-        if (signal.aborted) break;
-        update(chunk, first);
-        if (first) set({ replyPhase: "streaming" });
-        first = false;
-      }
+      const uploaded = await Promise.all(attachments.map((attachment) => attachment.file ? uploadAttachment(attachment.file) : Promise.reject(new Error("Attachment file is unavailable"))));
+      let firstChunk = true;
+      let streamedContent = "";
+      const result = await streamChat({ text, conversationId: isNewConversation ? undefined : targetId, agentId, assetIds: uploaded.map((asset) => asset.id), turnId: crypto.randomUUID(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC" }, (phase) => {
+        if (phase === "running") set({ replyPhase: "thinking", executionStatus: "Choosing an assistant" });
+        else set({ executionStatus: phase });
+      }, (chunk) => {
+        streamedContent += chunk;
+        update(streamedContent, firstChunk);
+        firstChunk = false;
+        set({ replyPhase: "streaming", executionStatus: null });
+      }, controller.signal, () => {
+        streamedContent = "";
+        set((s) => ({ conversations: s.conversations.map((c) => c.id === targetId ? { ...c, messages: c.messages.filter((message) => message.id !== replyId) } : c) }));
+        firstChunk = true;
+      });
+      update(result.message, firstChunk, result.approval ? { approvalId: result.approval.id, approvalStatus: result.approval.status } : undefined);
+      set((s) => ({
+        activeConversationId: s.activeConversationId === targetId ? result.conversationId : s.activeConversationId,
+        conversations: s.conversations.map((c) => c.id === targetId ? { ...c, id: result.conversationId, title: conversationsService.titleFromMessage(text, false) } : c),
+      }));
+    } catch (error) {
+      update(error instanceof Error ? error.message : "The chat service is unavailable.", true);
     } finally {
-      if (abortSignal === signal) set({ busyConversationId: null, replyPhase: "idle" });
+      if (abortController === controller) { abortController = null; set({ busyConversationId: null, replyPhase: "idle", executionStatus: null }); }
     }
   },
 
   stopReply: () => {
-    abortSignal.aborted = true;
-    set({ busyConversationId: null, replyPhase: "idle" });
+    abortController?.abort();
+    abortController = null;
+    set({ busyConversationId: null, replyPhase: "idle", executionStatus: null });
   },
 
   createAgent: async (input) => {
@@ -257,7 +287,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   disconnectIntegration: async (tool) => {
-    const next = await integrationsService.disconnectIntegration(tool);
-    set((s) => ({ integrations: s.integrations.map((i) => (i.tool === tool ? next : i)) }));
+    await integrationsService.disconnectIntegration(tool);
+    await get().loadIntegrations();
   },
 }));

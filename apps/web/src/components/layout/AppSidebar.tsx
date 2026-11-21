@@ -42,6 +42,7 @@ function SidebarBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate
   const deleteConversation = useAppStore((s) => s.deleteConversation);
   const setCollapsed = useAppStore((s) => s.setSidebarCollapsed);
   const [pendingDelete, setPendingDelete] = useState<Conversation | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const groups = groupConversations(conversations);
 
@@ -154,12 +155,20 @@ function SidebarBody({ collapsed, onNavigate }: { collapsed: boolean; onNavigate
         title="Delete this conversation?"
         description={pendingDelete ? `"${pendingDelete.title}" and its messages will be removed. This can't be undone.` : ""}
         confirmLabel="Delete conversation"
-        onConfirm={() => {
+        loading={deleting}
+        onConfirm={async () => {
           if (pendingDelete) {
-            deleteConversation(pendingDelete.id);
-            toast.success("Conversation deleted");
+            setDeleting(true);
+            try {
+              await deleteConversation(pendingDelete.id);
+              toast.success("Conversation deleted");
+              setPendingDelete(null);
+            } catch {
+              toast.error("Couldn't delete this conversation. Try again.");
+            } finally {
+              setDeleting(false);
+            }
           }
-          setPendingDelete(null);
         }}
       />
     </div>

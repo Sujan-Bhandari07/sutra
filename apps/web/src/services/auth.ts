@@ -1,39 +1,76 @@
 import type { User } from "@/types";
-import { MOCK_USER } from "./mock-data";
-import { sleep } from "@/lib/utils";
+import { signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
+import { getFirebaseAuth, getGoogleProvider, isFirebaseConfigured } from "@/utils/Firebase";
+export { isFirebaseConfigured };
 
-/**
- * Authentication service.
- *
- * Google sign-in is not wired up yet. When you add Firebase:
- *   1. Fill in the NEXT_PUBLIC_FIREBASE_* variables (see .env.example).
- *   2. Replace the body of `signInWithGoogle` with
- *      `signInWithPopup(auth, new GoogleAuthProvider())`.
- */
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
 
 export class AuthNotConfiguredError extends Error {
   constructor() {
-    super("Google sign-in isn't set up yet. Add your Firebase keys to .env.local and restart the dev server.");
+    super("Google sign-in needs a Firebase web API key in the web environment.");
     this.name = "AuthNotConfiguredError";
   }
 }
 
-export function isFirebaseConfigured() {
-  return Boolean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+export class AuthBackendError extends Error {
+  constructor(message: string, readonly status?: number) {
+    super(message);
+    this.name = "AuthBackendError";
+  }
+}
+
+function firebaseAuth() {
+  if (!isFirebaseConfigured()) throw new AuthNotConfiguredError();
+  return getFirebaseAuth();
+}
+
+function mapUser(user: any): User {
+  return { id: String(user._id ?? user.id), name: user.fullname ?? user.name ?? "", email: user.email, photoUrl: user.profilepic ?? user.photoUrl };
+}
+
+async function handleAuthResponse(response: Response): Promise<any> {
+  let data: any;
+  try {
+    data = await response.json();
+  } catch {
+    throw new AuthBackendError("The authentication service returned an invalid response.", response.status);
+  }
+
+  if (!response.ok) {
+    const message = data?.message ?? "The authentication service is temporarily unavailable.";
+    throw new AuthBackendError(message, response.status);
+  }
+
+  return data;
 }
 
 export async function signInWithGoogle(): Promise<User> {
-  await sleep(700);
-  if (!isFirebaseConfigured()) throw new AuthNotConfiguredError();
-  // Firebase is configured but the SDK is not installed in this frontend yet.
-  throw new Error("Firebase keys were found, but the Firebase SDK call hasn't been added to services/auth.ts.");
+  const auth = firebaseAuth();
+  const result = await signInWithPopup(auth, getGoogleProvider());
+  const token = await result.user.getIdToken();
+  const response = await fetch(`${API}/users/login`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  const data = await handleAuthResponse(response);
+  return mapUser(data.payload);
 }
 
 export async function signOut(): Promise<void> {
-  await sleep(200);
+  try {
+    await fetch(`${API}/users/logout`, { method: "POST", credentials: "include" });
+  } finally {
+    if (isFirebaseConfigured()) await firebaseSignOut(firebaseAuth());
+  }
 }
 
-/** Placeholder profile used by the demo workspace until real auth exists. */
-export async function getCurrentUser(): Promise<User> {
-  return MOCK_USER;
+export async function getCurrentUser(): Promise<User | null> {
+  try {
+    const response = await fetch(`${API}/users/getprofile`, { credentials: "include", cache: "no-store" });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return mapUser(data.payload);
+  } catch { return null; }
 }

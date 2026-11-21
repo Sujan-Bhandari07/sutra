@@ -32,3 +32,4 @@ export class Agent {
 
 
 export const agentSchema= SchemaFactory.createForClass(Agent)
+agentSchema.index({ userid: 1, updatedAt: -1 });

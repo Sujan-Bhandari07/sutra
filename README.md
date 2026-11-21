@@ -26,7 +26,7 @@
 
 Sutra is an AI-powered automation and productivity platform built around specialized AI agents. Instead of switching between calendars, inboxes, and social media tools, you describe what you want in plain language and Sutra's agents carry out the work. It also includes a general-purpose conversational assistant for everyday questions.
 
-> **Project status:** Sutra has just entered development. All features described here are currently in development. See [Development Status](#development-status) for details.
+> **Project status:** Sutra includes working application paths for authenticated chat, LangGraph routing, persistent conversations/checkpoints, MCP-backed actions, and durable approval gates. Live provider use still depends on correctly configured credentials, public media hosting, Meta permissions, and deployment hardening.
 
 ## Table of Contents
 
@@ -54,7 +54,7 @@ Sutra treats these tasks as delegable. A user describes an outcome in natural la
 
 ## Features
 
-> All features below are currently **🚧 in development**.
+> Feature code is implemented; external provider operations require credentials and permissions.
 >
 > Legend: ✅ Implemented · 🚧 In development · 🗓️ Planned
 
@@ -90,13 +90,15 @@ Sutra treats these tasks as delegable. A user describes an outcome in natural la
 
 ### Feature status
 
-| Feature               |       Status       |
-| --------------------- | :----------------: |
-| General AI chat       | 🚧 In development  |
-| Agent orchestration   | 🚧 In development  |
-| Calendar and meetings | 🚧 In development  |
-| Email automation      | 🚧 In development  |
-| Instagram automation  | 🚧 In development  |
+| Feature | Status |
+| --- | --- |
+| Agent CRUD and ownership scoped listing | Partial |
+| Google and Meta OAuth connection setup | Partial; credentials and provider review required |
+| Integration connection status and disconnect | Implemented in API |
+| Real AI chat and SSE | Implemented through the gateway and LangGraph service |
+| Gmail, Calendar, Instagram actions and approvals | Implemented with server-side OAuth and persistent approval gates |
+| Persistent conversation and activity history | Implemented using shared `libs/db` MongoDB setup |
+| Uploads and Instagram media preparation | JPEG/PNG/MP4 uploads; Instagram publishing requires public HTTPS media access |
 
 ## How It Works
 
@@ -123,7 +125,7 @@ Server-Sent Events (SSE) stream responses and progress updates from the backend 
 
 ## Architecture
 
-The diagram below shows the **conceptual** relationship between components. The system is in early development, so this reflects the intended design and may change. Dashed borders mark components whose exact role is still being defined.
+The diagram below shows the current service boundaries and request flow.
 
 ```mermaid
 %%{init: {'theme':'dark','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#30363d','lineColor':'#8b949e','clusterBkg':'#0d1117','clusterBorder':'#30363d','edgeLabelBackground':'#0d1117'}}}%%
@@ -192,7 +194,6 @@ flowchart TB
     classDef tool fill:#0f2e24,stroke:#3fb950,color:#e6edf3;
     classDef data fill:#161b22,stroke:#8b949e,color:#e6edf3;
     classDef external fill:#2a1015,stroke:#f85149,color:#e6edf3;
-    classDef conceptual stroke-dasharray: 5 5;
 
     class UI frontend;
     class API,SSE,Orchestrator backend;
@@ -200,7 +201,6 @@ flowchart TB
     class MCP tool;
     class Mongo,Redis,MQ data;
     class Cal,Mail,IG,LLM external;
-    class MQ,Redis conceptual;
 ```
 
 ### Component notes
@@ -213,8 +213,8 @@ flowchart TB
 | LangGraph | Stateful orchestration of multi-step agent workflows                  |
 | MCP       | Standard interface between agents and external tools                  |
 | MongoDB   | Persistent storage (for example conversations and user data)          |
-| Redis     | Caching and short-lived state (exact usage still being defined)       |
-| RabbitMQ  | Asynchronous messaging between services (exact usage still being defined) |
+| Redis     | SSE progress fan-out and request rate limiting                        |
+| RabbitMQ  | Requests between the gateway, user service, and agent service        |
 | SSE       | One-way streaming of responses and progress to the client             |
 
 ## Technology Stack
@@ -299,34 +299,35 @@ sutra/
 
 ## Getting Started
 
-> Commands below use placeholders where project-specific information is not available. Replace them with the real values from the repository.
-
 ### Prerequisites
 
-- Node.js (version: `<required-version>`)
-- npm
-- Docker and Docker Compose (for local services)
-- Access to an LLM provider account (`<provider>`)
-- Credentials for any external integrations you plan to use
+- Node.js 22 or newer and npm
+- Docker and Docker Compose
+- Google OAuth credentials for Gmail and Calendar
+- A Meta app configured for Instagram Login and a professional Instagram account connected to a Facebook Page
+- Firebase web app settings and a Firebase Admin service account for Google sign-in
+- A valid Groq or OpenRouter API key and a Tavily API key for web search
 
 ### Installation
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/<your-username>/<repository-name>.git
-cd <repository-name>
-
-# 2. Install dependencies
 npm install
+cp .env.example .env
 ```
 
 ### Configuration
 
-Environment configuration for Sutra is still being finalized. This section will document the required variables once they are defined. Never commit real credentials or API keys to the repository.
+Fill in `.env` with local credentials; never commit it. Register the callback URLs exactly as listed in `.env.example`. Google OAuth requires Gmail read/modify/send and Calendar events scopes. Meta permissions and app review must permit Instagram professional-account publishing. Use a long random `JWT_SECRET`; it signs both session and short-lived OAuth state tokens. Set `OAUTH_TOKEN_ENCRYPTION_KEY` to a stable 32-byte hex key (`openssl rand -hex 32`); new OAuth credentials are AES-256-GCM encrypted in MongoDB. Existing plaintext tokens are migrated when used. Changing this key requires reconnecting accounts unless the old key is available for migration. Configure the Firebase web app fields and set `FIREBASE_SERVICE_ACCOUNT_JSON` to the service account JSON with escaped newlines. Keep service account keys outside source control.
+
+Nx backend entrypoints load `apps/api/agents/.env`, `apps/api/gateway/.env`, or `apps/api/users/.env`, followed by the workspace root `.env` for defaults. Existing shell variables take precedence. Next.js loads `apps/web/.env`; the existing `VITE_FIREBASE_KEY` is mapped to the public Firebase API key, and the configured gateway port supplies the local API URL when `NEXT_PUBLIC_API_URL` is unset.
+
+Sutra tries `GROQ_API_KEY` first and falls back to `OPENROUTER_API_KEY`; `GROQ_MODEL` and `OPENROUTER_MODEL` select their respective models. In this environment, both providers rejected generation requests, so an updated key is required before AI chat can run. `TAVILY_API_KEY` is configured and a live search request succeeded. Google OAuth uses `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and the callback URI. Instagram uses `INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET` (or `INSTAGRAM_CLIENT_SECRET`), `INSTAGRAM_CONFIG_ID`, the callback URI, and a Meta app configured with Instagram publishing permissions. The existing Vite Firebase key name is mapped into Next.js; Firebase project/app identifiers and the Firebase Admin service account still need to be configured. User-level provider actions still require account consent and permissions.
+
+`PUBLIC_BASE_URL` must be the public HTTPS origin of the gateway and `/uploads` must be reachable by Meta. Set `UPLOAD_DIR` to persistent shared storage mounted by the gateway; uploaded image and MP4 files are referenced by URL during Instagram publishing. The implementation supports one image or MP4 per post, not carousel posts.
 
 ### Start supporting services
 
-MongoDB, Redis, and RabbitMQ can be run locally with Docker. The exact command depends on the project's Docker configuration:
+MongoDB, Redis, and RabbitMQ can be run locally with Docker:
 
 ```bash
 docker compose up -d   # <adjust to the actual compose file and service names>
@@ -337,64 +338,41 @@ docker compose up -d   # <adjust to the actual compose file and service names>
 Nx runs each application by its project name:
 
 ```bash
-# Backend
-npx nx serve <backend-project-name>
-
-# Frontend
-npx nx serve <frontend-project-name>   # or: npx nx dev <frontend-project-name>
+npm run dev:gateway
+npm run dev:users
+npm run dev:agents
+npm run dev:web
 ```
 
-The applications listen on `<backend-port>` and `<frontend-port>`. Check each project's configuration to confirm them.
+The web app uses port 3000 and the gateway uses `GATEWAY_PORT` (3001 in the example). The users and agents services connect to RabbitMQ.
 
 ### Build and test
 
 ```bash
-npx nx build <project-name>
-npx nx test <project-name>
-npx nx run-many -t build   # build all projects
+npx nx run-many -t build
+npx nx run-many -t lint
+npx nx run-many -t test
 ```
+
+The Nx projects currently do not all define test targets. Check targets with `npx nx show project <name>`; a skipped target means that project has no configured test suite.
 
 ## Development Status
 
-Sutra has just entered development and is **not yet production-ready**. APIs, data models, and agent behavior will change without notice.
+Sutra is an active implementation and still needs production deployment review, provider credentials, and live end-to-end validation.
 
 | Area                        |       Status       |
 | --------------------------- | :----------------: |
-| Core platform (web and API) | 🚧 In development  |
-| Agent orchestration         | 🚧 In development  |
-| General AI chat             | 🚧 In development  |
-| Calendar and meeting agent  | 🚧 In development  |
-| Email agent                 | 🚧 In development  |
-| Instagram agent             | 🚧 In development  |
-| Streaming responses (SSE)   | 🚧 In development  |
+| Core platform (web and API) | Implemented; production hardening remains |
+| Agent orchestration         | LangGraph supervisor and domain specialists |
+| General AI chat             | Stored context and multi-provider fallback; valid LLM key required |
+| Calendar and meeting agent  | Google Calendar read/write behind approval |
+| Email agent                 | Gmail search plus approved draft/send/reply actions |
+| Instagram agent             | Caption generation and approved single-media publishing |
+| Streaming responses (SSE)   | Token and final-result events via Redis |
 
 ## Roadmap
 
-The roadmap is directional and may change as the project evolves.
-
-**Foundation**
-- [ ] Stable monorepo setup with shared types and tooling
-- [ ] Authentication and user accounts
-- [ ] Conversation persistence
-- [ ] Documented environment configuration
-
-**Agent platform**
-- [ ] Robust LangGraph workflows with state handling and error recovery
-- [ ] Standardized MCP tool layer for integrations
-- [ ] Human-in-the-loop confirmation before sensitive actions (sending email, publishing posts)
-- [ ] Observability for agent runs (logging and tracing)
-
-**Integrations**
-- [ ] Calendar and meeting scheduling
-- [ ] Email composition and sending
-- [ ] Instagram content generation and publishing
-- [ ] Additional integrations based on user needs
-
-**Quality and operations**
-- [ ] Automated tests across apps and libraries
-- [ ] CI pipeline
-- [ ] Production-oriented Docker setup
-- [ ] Documentation for adding new agents and tools
+Remaining work is live validation with provider credentials, broader automated coverage for the new agent flows, and deployment hardening (persistent public upload storage, secret rotation, and production monitoring).
 
 ## Contributing
 

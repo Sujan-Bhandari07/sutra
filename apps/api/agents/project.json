@@ -4,62 +4,43 @@
   "sourceRoot": "apps/api/agents/src",
   "projectType": "application",
   "targets": {
+    "build": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": ["production", "^production", {"externalDependencies": ["webpack-cli"]}, {"json": "{workspaceRoot}/tsconfig.json", "fields": ["extends", "files", "include"]}],
+      "outputs": ["{workspaceRoot}/dist/apps/api/agents"],
+      "metadata": {"technologies": ["webpack"], "description": "Runs Webpack build", "help": {"command": "npx webpack-cli build --help", "example": {"options": {"json": "stats.json"}, "args": ["--profile"]}}},
+      "executor": "nx:run-commands",
+      "options": {"cwd": "apps/api/agents", "env": {"NODE_ENV": "production"}, "command": "webpack-cli build"},
+      "configurations": {"development": {"env": {"NODE_ENV": "development"}}},
+      "parallelism": true
+    },
     "prune-lockfile": {
-      "dependsOn": [
-        "build"
-      ],
+      "dependsOn": ["build"],
       "cache": true,
       "executor": "@nx/js:prune-lockfile",
-      "outputs": [
-        "{workspaceRoot}/dist/apps/api/agents/package.json",
-        "{workspaceRoot}/dist/apps/api/agents/package-lock.json"
-      ],
-      "options": {
-        "buildTarget": "build"
-      }
+      "outputs": ["{workspaceRoot}/dist/apps/api/agents/package.json", "{workspaceRoot}/dist/apps/api/agents/package-lock.json"],
+      "options": {"buildTarget": "build"}
     },
     "copy-workspace-modules": {
-      "dependsOn": [
-        "build"
-      ],
+      "dependsOn": ["build"],
       "cache": true,
-      "outputs": [
-        "{workspaceRoot}/dist/apps/api/agents/workspace_modules"
-      ],
+      "outputs": ["{workspaceRoot}/dist/apps/api/agents/workspace_modules"],
       "executor": "@nx/js:copy-workspace-modules",
-      "options": {
-        "buildTarget": "build"
-      }
+      "options": {"buildTarget": "build"}
     },
     "prune": {
-      "dependsOn": [
-        "prune-lockfile",
-        "copy-workspace-modules"
-      ],
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
       "executor": "nx:noop"
     },
     "serve": {
       "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": [
-        "build"
-      ],
-      "options": {
-        "buildTarget": "agents:build",
-        "runBuildTargetDependencies": false
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "agents:build:development"
-        },
-        "production": {
-          "buildTarget": "agents:build:production"
-        }
-      },
-      "readyWhen": {
-        "signal": true
-      }
+      "dependsOn": ["build"],
+      "options": {"buildTarget": "agents:build", "runBuildTargetDependencies": false},
+      "configurations": {"development": {"buildTarget": "agents:build:development"}, "production": {"buildTarget": "agents:build:production"}},
+      "readyWhen": {"signal": true}
     }
   },
   "tags": []

@@ -1,38 +1,42 @@
 import type { AgentInput, AgentRecord } from "@/types";
-import { MOCK_AGENTS, MOCK_USER } from "./mock-data";
-import { sleep, uid } from "@/lib/utils";
 
-// In-memory store. Swap each function body for a fetch to the NestJS API later.
-let agents: AgentRecord[] = [...MOCK_AGENTS];
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+type ApiAgent = Omit<AgentRecord, "id"> & { _id?: string; id?: string };
+
+async function request(path: string, init?: RequestInit) {
+  const response = await fetch(`${API}${path}`, {
+    ...init,
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...init?.headers },
+  });
+  if (!response.ok) throw new Error(`Agent request failed (${response.status}).`);
+  return response.json();
+}
+
+function normalize(agent: ApiAgent): AgentRecord {
+  const { _id, ...fields } = agent;
+  return { ...fields, id: agent.id ?? _id ?? "" } as AgentRecord;
+}
 
 export async function listAgents(): Promise<AgentRecord[]> {
-  await sleep(500);
-  return [...agents];
+  const result = await request("/agents/getagents");
+  return (result.payload ?? []).map(normalize);
 }
 
 export async function getAgent(id: string): Promise<AgentRecord | null> {
-  await sleep(300);
-  return agents.find((a) => a.id === id) ?? null;
+  return (await listAgents()).find((agent) => agent.id === id) ?? null;
 }
 
 export async function createAgent(input: AgentInput): Promise<AgentRecord> {
-  await sleep(700);
-  // `userid` is filled from the authenticated user, never from the form.
-  const agent: AgentRecord = { ...input, id: uid("agent"), userid: MOCK_USER.id };
-  agents = [agent, ...agents];
-  return agent;
+  const result = await request("/agents/createagent", { method: "POST", body: JSON.stringify(input) });
+  return normalize(result.payload);
 }
 
 export async function updateAgent(id: string, input: AgentInput): Promise<AgentRecord> {
-  await sleep(600);
-  const existing = agents.find((a) => a.id === id);
-  if (!existing) throw new Error("This agent no longer exists.");
-  const updated: AgentRecord = { ...existing, ...input };
-  agents = agents.map((a) => (a.id === id ? updated : a));
-  return updated;
+  const result = await request(`/agents/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(input) });
+  return normalize(result.payload);
 }
 
 export async function deleteAgent(id: string): Promise<void> {
-  await sleep(500);
-  agents = agents.filter((a) => a.id !== id);
+  await request(`/agents/${encodeURIComponent(id)}`, { method: "DELETE" });
 }

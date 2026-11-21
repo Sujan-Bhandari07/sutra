@@ -2,7 +2,7 @@ import { MCPAdapter } from "@langchain/mcp-adapters";
 import path from "path";
 
 
-const serverpath= path.join(__dirname,"mcp.server.ts")
+const serverpath = process.env.SUTRA_MCP_SERVER_PATH ?? path.join(__dirname, "mcp.server.js");
 
 
 export const mcpClient = new MCPAdapter({
@@ -19,5 +19,5 @@ export const mcpClient = new MCPAdapter({
 
 export const getTools = async()=>{
   const tools = await mcpClient.listTools()
-  console.log("tools from ",tools)
+  return tools;
 }

@@ -15,11 +15,11 @@ export enum EStatus{
 
 @Schema({ _id: false, timestamps: false })
 class Account {
-  @Prop({ type: String, required: true, lowercase: true })
-  email: string;
+  @Prop({ type: String, lowercase: true })
+  email?: string;
 
   @Prop({ type: String })
-  username: string;
+  username?: string;
 
   @Prop({ type: String })
   displayname: string;
@@ -65,7 +65,7 @@ export class Integration {
  @Prop({ type: [String] })
   scopes: string[];
 
-    @Prop({ type: String, required: true, enum: ["google", "instagram"],default:EStatus.connected })
+    @Prop({ type: String, required: true, enum: Object.values(EStatus),default:EStatus.connected })
   status: EStatus;
 
     @Prop({ type:Date })
@@ -83,3 +83,5 @@ export class Integration {
 }
 
 export const integrationSchema = SchemaFactory.createForClass(Integration);
+integrationSchema.index({ userid: 1, provider: 1, provideraccountid: 1 }, { unique: true });
+integrationSchema.index({ userid: 1, status: 1 });

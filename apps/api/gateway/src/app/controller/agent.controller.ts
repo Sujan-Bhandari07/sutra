@@ -2,6 +2,9 @@ import {
   Body,
   Controller,
   Get,
+  Delete,
+  Param,
+  Patch,
   Inject,
   Post,
   Req,
@@ -32,5 +35,17 @@ export class AgentController {
     return firstValueFrom(
       this.agentclient.send("getagents", { userid: req.user }),
     );
+  }
+
+  @UseGuards(JwtGuard)
+  @Patch(":id")
+  updateagent(@Param("id") id: string, @Body() data: GCreateAgentDto, @Req() req: Authreq) {
+    return firstValueFrom(this.agentclient.send("updateagent", { ...data, id, userid: req.user }));
+  }
+
+  @UseGuards(JwtGuard)
+  @Delete(":id")
+  deleteagent(@Param("id") id: string, @Req() req: Authreq) {
+    return firstValueFrom(this.agentclient.send("deleteagent", { id, userid: req.user }));
   }
 }

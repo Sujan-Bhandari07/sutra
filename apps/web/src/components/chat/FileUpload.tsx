@@ -5,7 +5,7 @@ import { useDropzone, type FileRejection } from "react-dropzone";
 import { ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 
-export const MAX_FILE_SIZE = 10 * 1024 * 1024;
+export const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 /** Wraps react-dropzone: drop anywhere on the composer, or use the attach buttons. */
 export function useFileDrop({ onFiles, disabled }: { onFiles: (files: File[]) => void; disabled?: boolean }) {
@@ -13,14 +13,14 @@ export function useFileDrop({ onFiles, disabled }: { onFiles: (files: File[]) =>
     (accepted: File[], rejected: FileRejection[]) => {
       if (rejected.length) {
         const tooLarge = rejected.some((r) => r.errors.some((e) => e.code === "file-too-large"));
-        toast.error(tooLarge ? "Files must be 10 MB or smaller." : "Some files couldn't be added.");
+        toast.error(tooLarge ? "Images must be 10 MB or smaller; MP4 videos must be 50 MB or smaller." : "Some files couldn't be added.");
       }
       if (accepted.length) onFiles(accepted);
     },
     [onFiles],
   );
 
-  return useDropzone({ onDrop, noClick: true, noKeyboard: true, maxSize: MAX_FILE_SIZE, disabled });
+  return useDropzone({ onDrop, noClick: true, noKeyboard: true, maxSize: MAX_FILE_SIZE, disabled, accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"], "video/mp4": [".mp4"] } });
 }
 
 export function DropOverlay({ active }: { active: boolean }) {

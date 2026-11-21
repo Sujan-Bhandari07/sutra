@@ -11,7 +11,9 @@ export const MAX_ATTACHMENTS = 6;
 export function useAttachments() {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const ref = useRef<Attachment[]>([]);
-  ref.current = attachments;
+  useEffect(() => {
+    ref.current = attachments;
+  }, [attachments]);
 
   const add = useCallback((files: File[]) => {
     const room = MAX_ATTACHMENTS - ref.current.length;
@@ -27,8 +29,9 @@ export function useAttachments() {
         name: file.name,
         size: file.size,
         mimeType: file.type || "application/octet-stream",
-        kind: isImage ? "image" : "file",
-        previewUrl: isImage ? URL.createObjectURL(file) : undefined,
+        kind: isImage ? "image" : file.type === "video/mp4" ? "video" : "file",
+        previewUrl: isImage || file.type === "video/mp4" ? URL.createObjectURL(file) : undefined,
+        file,
       };
     });
     setAttachments((prev) => [...prev, ...next]);

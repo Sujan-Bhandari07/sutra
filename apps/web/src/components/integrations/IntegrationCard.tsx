@@ -10,6 +10,8 @@ import { ConfirmDialog } from "@/components/ui/Dialog";
 import { useAppStore } from "@/store/app-store";
 import type { Integration } from "@/types";
 import { TOOL_BY_ID } from "@/lib/tools";
+import { IntegrationRequestError } from "@/services/integrations";
+import { oauthProviderName, oauthStageMessage, sanitizeOAuthDiagnostic } from "@/utils/oauth-feedback";
 
 export function IntegrationCard({ integration }: { integration: Integration }) {
   const meta = TOOL_BY_ID[integration.tool];
@@ -25,9 +27,20 @@ export function IntegrationCard({ integration }: { integration: Integration }) {
     setBusy(true);
     try {
       await connect(integration.tool);
-      toast.success(`${meta.label} connected`);
-    } catch {
-      setError(`We couldn't connect ${meta.label}. Try again in a moment.`);
+    } catch (failure) {
+      const provider = oauthProviderName(integration.tool);
+      const status = typeof failure === "object" && failure !== null && "status" in failure && typeof failure.status === "number"
+        ? failure.status
+        : null;
+      const rawMessage = typeof failure === "object" && failure !== null && "message" in failure ? String(failure.message) : "";
+      const safeMessage = sanitizeOAuthDiagnostic(rawMessage);
+      // Backend/transport errors already carry safe, user-friendly messages.
+      const userMessage = failure instanceof IntegrationRequestError && typeof failure.message === "string" && failure.message.length > 0
+        ? failure.message
+        : oauthStageMessage("authorization_request");
+      // Logged once per connect attempt, provider + stage + status + safe message only.
+      console.error(`[OAuth] ${provider} connection failed:`, { stage: "authorization_request", status, message: safeMessage ?? "(no message)" });
+      setError(userMessage);
     } finally {
       setBusy(false);
     }

@@ -22,6 +22,11 @@ export function AttachmentPreview({
     </button>
   );
 
+  if (attachment.kind === "video" && attachment.previewUrl) {
+    // oxlint-disable-next-line jsx-a11y/media-has-caption -- Uploaded preview files do not include a caption track.
+    return <div className={cn("group relative", className)}><video src={attachment.previewUrl} controls className={cn("max-h-64 max-w-full rounded-lg border border-border", onRemove ? "h-16 w-28 object-cover" : "")} />{removeButton}</div>;
+  }
+
   if (attachment.kind === "image" && attachment.previewUrl) {
     return (
       <div className={cn("group relative", className)}>

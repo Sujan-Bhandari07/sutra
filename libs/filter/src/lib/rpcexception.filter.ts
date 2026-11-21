@@ -30,6 +30,17 @@ export class ServiceExceptionFilter extends BaseRpcExceptionFilter {
           : Array.isArray(body.message)
             ? body.message.join(', ')
             : body.message ?? message;
+      const oauth = body && typeof body === 'object' && body.oauth && typeof body.oauth === 'object'
+        ? body.oauth
+        : undefined;
+      if (oauth && ["google", "instagram"].includes(oauth.provider) && typeof oauth.stage === "string") {
+        return throwError(() => ({ success: false, statusCode, message, oauth: {
+          provider: oauth.provider,
+          stage: oauth.stage,
+          ...(Number.isInteger(oauth.status) ? { status: oauth.status } : {}),
+          ...(typeof oauth.diagnostic === "string" ? { diagnostic: oauth.diagnostic.slice(0, 240) } : {}),
+        } }));
+      }
     } else {
       // unexpected error: log it, hide the details from the client
       this.logger.error(exception instanceof Error ? exception.stack : String(exception));

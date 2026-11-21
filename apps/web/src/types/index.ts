@@ -45,9 +45,10 @@ export interface Attachment {
   name: string;
   size: number;
   mimeType: string;
-  kind: "image" | "file";
+  kind: "image" | "video" | "file";
   /** Object URL for local previews only. */
   previewUrl?: string;
+  file?: File;
 }
 
 export type MessageRole = "user" | "assistant";
@@ -58,6 +59,7 @@ export interface Message {
   content: string;
   createdAt: string;
   attachments?: Attachment[];
+  metadata?: { approvalId?: string; approvalStatus?: string; result?: Record<string, unknown>; attachments?: Array<Record<string, unknown>> };
 }
 
 export interface Conversation {

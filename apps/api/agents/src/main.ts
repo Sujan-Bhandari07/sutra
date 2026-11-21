@@ -6,11 +6,14 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {ServiceExceptionFilter} from "@sutra/filter"
-import { AppModule } from './app/app.module';
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
+import { loadApiEnvironment } from "../../config/environment";
+
+loadApiEnvironment("agents");
 
 async function bootstrap() {
   process.title="Agent service"
+  const { AppModule } = await import('./app/app.module');
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {

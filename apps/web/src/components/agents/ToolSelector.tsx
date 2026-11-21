@@ -22,13 +22,11 @@ export function ToolSelector({
   const toggle = (tool: AgentTool) =>
     onChange(value.includes(tool) ? value.filter((t) => t !== tool) : [...value, tool]);
 
-  const disconnectedSelected = TOOLS.filter(
-    (t) => value.includes(t.id) && !loading && !integrations.find((i) => i.tool === t.id)?.connected,
-  );
-
   return (
     <div>
-      <ul className="space-y-2.5" role="group" aria-label="Tools">
+      <fieldset>
+      <legend className="sr-only">Tools</legend>
+      <ul className="space-y-2.5">
         {TOOLS.map(({ id, label, toolDescription, Icon }) => {
           const selected = value.includes(id);
           const connected = integrations.find((i) => i.tool === id)?.connected ?? false;
@@ -37,14 +35,15 @@ export function ToolSelector({
               key={id}
               className={cn(
                 "flex items-center gap-2 rounded-xl border bg-surface transition-colors",
-                selected ? "border-primary/60 bg-primary/[0.06]" : "border-border hover:border-muted/50",
+                selected ? "border-primary/60 bg-primary/[0.06]" : "border-border",
+                connected && !loading && "hover:border-muted/50",
               )}
             >
               <button
                 type="button"
-                role="checkbox"
-                aria-checked={selected}
-                onClick={() => toggle(id)}
+                aria-pressed={selected}
+                disabled={loading || (!connected && !selected)}
+                onClick={() => !loading && (connected || selected) && toggle(id)}
                 className="flex min-w-0 flex-1 items-center gap-3.5 rounded-xl p-3.5 text-left"
               >
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-elevated">
@@ -54,6 +53,7 @@ export function ToolSelector({
                   <span className="block text-sm font-medium">{label}</span>
                   <span className="block text-[13px] leading-snug text-secondary">{toolDescription}</span>
                   <ConnectionStatus connected={connected} loading={loading} className="mt-1.5" />
+                  {!loading && !connected && <span className="mt-1 block text-xs text-muted">Connect this integration before assigning it.</span>}
                 </span>
                 <span
                   aria-hidden
@@ -70,24 +70,15 @@ export function ToolSelector({
                   href="/integrations"
                   className="mr-3.5 shrink-0 rounded-lg border border-border px-2.5 py-1.5 text-[13px] font-medium text-foreground transition-colors hover:bg-elevated"
                 >
-                  Connect
+                  Go to Integrations
                 </Link>
               )}
             </li>
           );
         })}
       </ul>
-      {disconnectedSelected.length > 0 && (
-        <p className="mt-3 text-[13px] leading-relaxed text-secondary">
-          {disconnectedSelected.map((t) => t.label).join(" and ")} {disconnectedSelected.length > 1 ? "aren't" : "isn't"}{" "}
-          connected yet. You can save the agent now, but it can't use{" "}
-          {disconnectedSelected.length > 1 ? "them" : "it"} until you{" "}
-          <Link href="/integrations" className="text-primary underline underline-offset-4">
-            connect {disconnectedSelected.length > 1 ? "them" : "it"}
-          </Link>
-          .
-        </p>
-      )}
+      </fieldset>
+      {status === "error" && <p role="alert" className="mt-3 text-[13px] text-danger">We couldn't check your integrations. Reload the page before assigning tools.</p>}
     </div>
   );
 }

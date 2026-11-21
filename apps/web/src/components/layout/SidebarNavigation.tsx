@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, MessageSquare, PlusCircle, Plug, Settings, type LucideIcon } from "lucide-react";
+import { Activity, Bot, MessageSquare, PlusCircle, Plug, Settings, type LucideIcon } from "lucide-react";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,7 @@ export const PRIMARY_NAV: NavItem[] = [
   },
   { href: "/agents/create", label: "Create agent", icon: PlusCircle, isActive: (p) => p.startsWith("/agents/create") },
   { href: "/integrations", label: "Integrations", icon: Plug, isActive: (p) => p.startsWith("/integrations") },
+  { href: "/activity", label: "Activity", icon: Activity, isActive: (p) => p.startsWith("/activity") },
 ];
 
 export const SETTINGS_NAV: NavItem = {

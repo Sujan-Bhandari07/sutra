@@ -1,5 +1,13 @@
 
 services:
+  mongodb:
+    image: mongo:7
+    container_name: sutra-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
   redis:
     image: redis:7-alpine
     container_name: redis
@@ -24,5 +32,6 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
 
 volumes:
+  mongo_data:
   redis_data:
   rabbitmq_data:

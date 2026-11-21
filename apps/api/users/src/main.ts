@@ -5,12 +5,16 @@
 
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
 import {MicroserviceOptions,Transport} from "@nestjs/microservices"
 import {ServiceExceptionFilter} from "@sutra/filter"
+import { config as loadDotenv } from "dotenv";
+import { resolve } from "node:path";
+
+loadDotenv({ path: [resolve(process.cwd(), "apps/api/users/.env"), resolve(process.cwd(), ".env")] });
 
 async function bootstrap() {
   process.title="User service"
+  const { AppModule } = await import('./app/app.module');
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {

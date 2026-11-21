@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { GoogleIcon } from "@/components/ui/brand-icons";
-import { AuthNotConfiguredError, isFirebaseConfigured, signInWithGoogle } from "@/services/auth";
+import { AuthNotConfiguredError, AuthBackendError, isFirebaseConfigured, signInWithGoogle } from "@/services/auth";
+import { useAppStore } from "@/store/app-store";
 
 export function GoogleSignInButton() {
   const router = useRouter();
@@ -18,9 +18,18 @@ export function GoogleSignInButton() {
     setLoading(true);
     try {
       await signInWithGoogle();
+      await useAppStore.getState().refreshAuth();
       router.push("/chat");
     } catch (err) {
-      setError(err instanceof AuthNotConfiguredError || err instanceof Error ? err.message : "Sign-in failed. Try again.");
+      if (err instanceof AuthNotConfiguredError) {
+        setError(err.message);
+      } else if (err instanceof AuthBackendError) {
+        setError(err.message);
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Sign-in failed. Try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -49,11 +58,7 @@ export function GoogleSignInButton() {
           <AlertCircle className="mt-0.5 size-4 shrink-0 text-danger" />
           <div>
             <p>{error}</p>
-            {!isFirebaseConfigured() && (
-              <Link href="/chat" className="mt-1.5 inline-block text-primary underline underline-offset-4">
-                Open the demo workspace instead
-              </Link>
-            )}
+            {!isFirebaseConfigured() && <p className="mt-1.5 text-secondary">Add the Firebase web configuration to enable sign-in.</p>}
           </div>
         </div>
       )}

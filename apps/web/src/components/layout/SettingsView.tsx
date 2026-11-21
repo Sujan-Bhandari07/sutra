@@ -111,12 +111,11 @@ export function SettingsView() {
 
       <Section title="Preferences">
         <Row label="Theme">
-          <div role="radiogroup" aria-label="Theme" className="inline-flex rounded-lg border border-border bg-background p-0.5">
+          <div aria-label="Theme" className="inline-flex rounded-lg border border-border bg-background p-0.5">
             {THEMES.map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
-                role="radio"
-                aria-checked={theme === value}
+                aria-pressed={theme === value}
                 onClick={() => setTheme(value)}
                 className={cn(
                   "flex h-8 items-center gap-1.5 rounded-md px-3 text-[13px] transition-colors",

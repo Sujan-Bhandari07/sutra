@@ -1,9 +1,6 @@
 import { TState } from "./state";
 
-const approval = async (state:TState)=>{
+/** Approval is a deliberate stop point. Side-effect tools are never called here. */
+const approval = async (state: TState): Promise<TState> => state;
 
-    const s
-
-    
-
-}
+export { approval };

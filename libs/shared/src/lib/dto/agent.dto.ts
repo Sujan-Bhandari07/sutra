@@ -1,7 +1,8 @@
 import {
-  ArrayNotEmpty,
+  ArrayUnique,
   IsArray,
   IsDefined,
+  IsIn,
   IsNotEmpty,
   IsString,
 } from "class-validator";
@@ -23,7 +24,8 @@ export class GCreateAgentDto {
   instruction!: string;
 
   @IsArray({ message: "Agents must be an array." })
-  @ArrayNotEmpty({ message: "Please select some agents." })
+  @ArrayUnique({ message: "Each tool can only be selected once." })
+  @IsIn(["instagram", "gmail", "googlecalendar", "websearch"], { each: true, message: "An agent tool is invalid." })
   @IsString({ each: true, message: "Each agent must be a string." })
   tools!: string[];
 }

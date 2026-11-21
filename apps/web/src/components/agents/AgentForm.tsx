@@ -52,6 +52,8 @@ export function AgentForm({
     defaultValues: defaultValues ?? { name: "", description: "", instruction: "", tools: [] },
   });
 
+  // react-hook-form's watch API is required to keep the live character count current.
+  // oxlint-disable-next-line react/incompatible-library
   const descriptionLength = watch("description")?.length ?? 0;
 
   return (

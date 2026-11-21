@@ -10,6 +10,7 @@ import { CodeBlock } from "./CodeBlock";
 import { AttachmentPreview } from "./AttachmentPreview";
 import { LogoMark } from "@/components/ui/Logo";
 import type { Message } from "@/types";
+import { ApprovalCard } from "./ApprovalCard";
 
 const markdownComponents: Components = {
   pre: ({ children }) => <>{children}</>,
@@ -39,15 +40,11 @@ function AssistantAvatar() {
   );
 }
 
-export const TypingIndicator = () => (
-  <div className="flex gap-3" role="status" aria-label="Sutra is typing">
+export const TypingIndicator = ({ status = "Sutra is thinking" }: { status?: string }) => (
+  <output className="flex items-center gap-3" aria-label={status}>
     <AssistantAvatar />
-    <div className="flex h-7 items-center gap-1" aria-hidden>
-      {[0, 1, 2].map((i) => (
-        <span key={i} className="typing-dot size-1.5 rounded-full bg-secondary" style={{ animationDelay: `${i * 0.16}s` }} />
-      ))}
-    </div>
-  </div>
+    <div className="flex items-center gap-2 text-xs text-secondary"><span className="flex h-7 items-center gap-1" aria-hidden>{[0, 1, 2].map((i) => <span key={i} className="typing-dot size-1.5 rounded-full bg-secondary" style={{ animationDelay: `${i * 0.16}s` }} />)}</span>{status}</div>
+  </output>
 );
 
 function CopyMessage({ text }: { text: string }) {
@@ -105,6 +102,7 @@ function ChatMessageBase({ message }: { message: Message }) {
             {message.content}
           </ReactMarkdown>
         </div>
+        {message.metadata?.approvalId && <ApprovalCard id={message.metadata.approvalId} />}
         <div className="mt-1.5 flex items-center gap-1.5">
           <time dateTime={message.createdAt} className="text-xs text-muted">
             {time}
